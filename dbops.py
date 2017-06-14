@@ -125,7 +125,7 @@ def update_app_install_count(package_name, install_count):
     logging.warn('update_app_install_count() is meant for testing purposes only')
     query = """UPDATE apps
                SET installCount=%s
-               WHERE package_name=%s"""
+               WHERE packageName=%s"""
     cursor = _query_commit(query, install_count, package_name)
 
     logging.info('Updated installCount for %s to %d' % (package_name, install_count))
