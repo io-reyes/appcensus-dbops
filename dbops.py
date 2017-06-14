@@ -70,17 +70,17 @@ def insert_company(name, google_dev_id=None, company_type=None):
 # Apps and releases #
 #####################
 
-def insert_app(dev_key, package_name, common_name, product_url=None, last_checked=None, icon_url=None):
+def insert_app(dev_key, package_name, common_name, product_url=None, last_checked=None, icon_url=None, install_count=0):
     # Set the timestamp to the current UTC time if not provided
     if(last_checked is None):
         last_checked = get_current_timestamp()
 
-    query = """INSERT INTO apps(packageName, commonName, devCompanyId, productUrl, timestampLastChecked, iconUrl)
-               VALUES (%s, %s, %s, %s, %s, %s)
+    query = """INSERT INTO apps(packageName, commonName, devCompanyId, productUrl, timestampLastChecked, iconUrl, installCount)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)
                ON DUPLICATE KEY UPDATE
-               packageName=%s, commonName=%s, devCompanyId=%s, productUrl=%s, timestampLastChecked=%s, iconUrl=%s"""
-    cursor = _query_commit(query, package_name, common_name, dev_key, product_url, last_checked, icon_url, \
-                                  package_name, common_name, dev_key, product_url, last_checked, icon_url)
+               packageName=%s, commonName=%s, devCompanyId=%s, productUrl=%s, timestampLastChecked=%s, iconUrl=%s, installCount=%s"""
+    cursor = _query_commit(query, package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, \
+                                  package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count)
 
     # Get the primary key of the new row
     query = """SELECT id FROM apps
@@ -120,6 +120,15 @@ def update_app_icon(package_name, icon_url):
     cursor = _query_commit(query, icon_url, package_name)
 
     logging.info('Updated iconUrl for %s' % package_name)
+
+def update_app_install_count(package_name, install_count):
+    logging.warn('update_app_install_count() is meant for testing purposes only')
+    query = """UPDATE apps
+               SET installCount=%s
+               WHERE package_name=%s"""
+    cursor = _query_commit(query, install_count, package_name)
+
+    logging.info('Updated installCount for %s to %d' % (package_name, install_count))
 
 def insert_app_release(app_key, version_code, version_string, timestamp_publish, \
                        timestamp_download=None, has_iap=None, has_ads=None, social_nets=None, tested=0):
