@@ -113,11 +113,12 @@ def update_app_check_time(package_name, last_checked=None):
     return pkey
 
 def update_app_run_status(package_name, run_status):
-    # Only 3 valid values for run_status:
+    # Only 4 valid values for run_status:
+    # -1 - ERROR
     # 0 - available for testing
     # 1 - currently testing
     # 2 - logs to process
-    assert run_status in [0, 1, 2], 'Invalid run status value %d, must be 0 (available), 1 (testing), or 2 (processing)' % run_status
+    assert run_status in [-1, 0, 1, 2], 'Invalid run status value %d, must be 0 (available), 1 (testing), or 2 (processing)' % run_status
 
     query = """UPDATE apps
                SET runStatus=%s
