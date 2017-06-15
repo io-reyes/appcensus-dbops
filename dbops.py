@@ -111,6 +111,20 @@ def update_app_check_time(package_name, last_checked=None):
     logging.info('Updated check time to %d for %d (%s)' % (last_checked, pkey, package_name))
 
     return pkey
+
+def update_app_run_status(package_name, run_status):
+    # Only 3 valid values for run_status:
+    # 0 - available for testing
+    # 1 - currently testing
+    # 2 - logs to process
+    assert run_status in [0, 1, 2], 'Invalid run status value %d, must be 0 (available), 1 (testing), or 2 (processing)' % run_status
+
+    query = """UPDATE apps
+               SET runStatus=%s
+               WHERE packageName=%s"""
+    cursor = _query_commit(query, run_status, package_name)
+
+    logging.info('Updated run status to %d for package %s' % (run_status, package_name))
     
 def update_app_icon(package_name, icon_url):
     logging.warn('update_app_icon() is meant for testing purposes only')
@@ -279,6 +293,27 @@ def get_release_id(package_name, version_code):
         logging.warning('Found no releaseId for package %s version %d' % (package_name, version_code))
         return None
 
+def get_app_to_test():
+    query = """SELECT packageName,
+                      MAX(appReleases.versionCode),
+                      installCount,
+                      priority
+                      FROM `apps`
+                      INNER JOIN appReleases ON apps.id=appReleases.appId AND appReleases.tested=0
+                      WHERE runStatus=0
+                      GROUP BY packageName, installCount, priority
+                      ORDER BY priority DESC, installCount DESC
+                      LIMIT 1"""
+    cursor = _query(query)
+
+    try:
+        (package_name, version_code, install_count, priority) = cursor.fetchone()
+        logging.info('Found package %s version code %d (priority %d, %d installs)' % (package_name, version_code, priority, install_count))
+        return (package_name, version_code)
+    except TypeError:
+        logging.warning('Found no apps to test from the database')
+        return None
+
 def is_app_in_db(package_name, version_code):
     return get_release_id(package_name, version_code) is not None
 
@@ -290,6 +325,9 @@ if __name__ == '__main__':
     logging.basicConfig(level=20)
     init('localhost', 'appcensus', 'appcensus', 'placeholder')
 
-    release_id = get_release_id('edu.berkeley.icsi.sensormonitor', 8)
+    (app1, vc1) = get_app_to_test()
+    print(app1)
+    update_app_run_status(app1, 1)
+    (app2, vc2) = get_app_to_test()
+    print(app2)
 
-    update_release_tested(release_id, tested=False)
