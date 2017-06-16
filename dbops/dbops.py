@@ -172,6 +172,15 @@ def update_release_tested(release_key, tested=True):
     cursor = _query_commit(query, tested, release_key)
     logging.info('Marked release id %d as tested=%s' % (release_key, tested))
 
+    if(tested):
+        query = """UPDATE apps
+                   SET runStatus=0
+                   WHERE id IN
+                        (SELECT appId FROM appReleases
+                         WHERE id=%s)"""
+        cursor = _query_commit(query, release_key)
+        logging.info('Marked app for release id %d as runStatus=0' % release_id)
+
 ##############
 # Categories #
 ##############
