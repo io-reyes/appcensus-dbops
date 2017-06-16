@@ -70,17 +70,17 @@ def insert_company(name, google_dev_id=None, company_type=None):
 # Apps and releases #
 #####################
 
-def insert_app(dev_key, package_name, common_name, product_url=None, last_checked=None, icon_url=None, install_count=0):
+def insert_app(dev_key, package_name, common_name, product_url=None, last_checked=None, icon_url=None, install_count=0, run_status=0):
     # Set the timestamp to the current UTC time if not provided
     if(last_checked is None):
         last_checked = get_current_timestamp()
 
-    query = """INSERT INTO apps(packageName, commonName, devCompanyId, productUrl, timestampLastChecked, iconUrl, installCount)
-               VALUES (%s, %s, %s, %s, %s, %s, %s)
+    query = """INSERT INTO apps(packageName, commonName, devCompanyId, productUrl, timestampLastChecked, iconUrl, installCount, runStatus)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                ON DUPLICATE KEY UPDATE
-               packageName=%s, commonName=%s, devCompanyId=%s, productUrl=%s, timestampLastChecked=%s, iconUrl=%s, installCount=%s"""
-    cursor = _query_commit(query, package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, \
-                                  package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count)
+               packageName=%s, commonName=%s, devCompanyId=%s, productUrl=%s, timestampLastChecked=%s, iconUrl=%s, installCount=%s, runStatus=%s"""
+    cursor = _query_commit(query, package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status, \
+                                  package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status)
 
     # Get the primary key of the new row
     query = """SELECT id FROM apps
