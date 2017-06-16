@@ -179,7 +179,7 @@ def update_release_tested(release_key, tested=True):
                         (SELECT appId FROM appReleases
                          WHERE id=%s)"""
         cursor = _query_commit(query, release_key)
-        logging.info('Marked app for release id %d as runStatus=0' % release_id)
+        logging.info('Marked app for release id %d as runStatus=0' % release_key)
 
 ##############
 # Categories #
