@@ -70,17 +70,17 @@ def insert_company(name, google_dev_id=None, company_type=None):
 # Apps and releases #
 #####################
 
-def insert_app(dev_key, package_name, common_name, product_url=None, last_checked=None, icon_url=None, install_count=0, run_status=0):
+def insert_app(dev_key, package_name, common_name, product_url=None, last_checked=None, icon_url=None, install_count=0, run_status=0, is_family=0):
     # Set the timestamp to the current UTC time if not provided
     if(last_checked is None):
         last_checked = get_current_timestamp()
 
-    query = """INSERT INTO apps(packageName, commonName, devCompanyId, productUrl, timestampLastChecked, iconUrl, installCount, runStatus)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    query = """INSERT INTO apps(packageName, commonName, devCompanyId, productUrl, timestampLastChecked, iconUrl, installCount, runStatus, isFamily)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                ON DUPLICATE KEY UPDATE
-               packageName=%s, commonName=%s, devCompanyId=%s, productUrl=%s, timestampLastChecked=%s, iconUrl=%s, installCount=%s, runStatus=%s"""
-    cursor = _query_commit(query, package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status, \
-                                  package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status)
+               packageName=%s, commonName=%s, devCompanyId=%s, productUrl=%s, timestampLastChecked=%s, iconUrl=%s, installCount=%s, runStatus=%s, isFamily=%s"""
+    cursor = _query_commit(query, package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status, is_family, \
+                                  package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status, is_family)
 
     # Get the primary key of the new row
     query = """SELECT id FROM apps
@@ -135,6 +135,15 @@ def update_app_icon(package_name, icon_url):
     cursor = _query_commit(query, icon_url, package_name)
 
     logging.info('Updated iconUrl for %s' % package_name)
+
+def update_family(package_name, is_family):
+    logging.warn('update_family() is meant for testing purposes only')
+    query = """UPDATE apps
+               SET isFamily=%s
+               WHERE packageName=%s"""
+    cursor = _query_commit(query, is_family, package_name)
+
+    logging.info('Updated family flag to %d for %s' % (is_family, package_name))
 
 def update_app_install_count(package_name, install_count):
     logging.warn('update_app_install_count() is meant for testing purposes only')
