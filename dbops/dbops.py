@@ -333,6 +333,23 @@ def get_app_to_test():
         logging.warning('Found no apps to test from the database')
         return None
 
+def get_apps_to_update(limit=100):
+    limit = max(0, limit)
+    query = """SELECT packageName FROM apps
+               WHERE UNIX_TIMESTAMP(UTC_TIMESTAMP()) - timestampLastChecked > checkInterval
+               ORDER BY installCount DESC
+               LIMIT %s"""
+    cursor = _query(query, limit)
+
+    try:
+        apps = [x[0] for x in list(cursor.fetchall())]
+        logging.info('Found %d apps to update' % len(apps))
+
+        return apps
+    except TypeError:
+        logging.warning('Found no apps to update')
+        return list()
+
 def is_app_in_db(package_name, version_code):
     return get_release_id(package_name, version_code) is not None
 
@@ -344,9 +361,5 @@ if __name__ == '__main__':
     logging.basicConfig(level=20)
     init('localhost', 'appcensus', 'appcensus', 'placeholder')
 
-    (app1, vc1) = get_app_to_test()
-    print(app1)
-    update_app_run_status(app1, 1)
-    (app2, vc2) = get_app_to_test()
-    print(app2)
-
+    print(get_apps_to_update(limit=150))
+    print(get_apps_to_update(limit=-1))
