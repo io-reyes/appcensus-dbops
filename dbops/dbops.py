@@ -126,6 +126,16 @@ def update_app_run_status(package_name, run_status):
     cursor = _query_commit(query, run_status, package_name)
 
     logging.info('Updated run status to %d for package %s' % (run_status, package_name))
+
+def update_app_in_store(package_name, in_store=True):
+    in_store_val = 1 if in_store else 0
+
+    query = """UPDATE apps
+               SET isInStore=%s
+               WHERE packageName=%s"""
+    cursor = _query_commit(query, in_store_val, package_name)
+
+    logging.info('Updated in-store flag to %d for package %s' % (in_store_val, package_name))
     
 def update_app_icon(package_name, icon_url):
     logging.warn('update_app_icon() is meant for testing purposes only')
@@ -337,6 +347,7 @@ def get_apps_to_update(limit=100):
     limit = max(0, limit)
     query = """SELECT packageName FROM apps
                WHERE UNIX_TIMESTAMP(UTC_TIMESTAMP()) - timestampLastChecked > checkInterval
+                     AND isInStore=1
                ORDER BY installCount DESC
                LIMIT %s"""
     cursor = _query(query, limit)
@@ -358,8 +369,8 @@ def is_app_in_db(package_name, version_code):
 ###################
 
 if __name__ == '__main__':
-    logging.basicConfig(level=20)
+    logging.basicConfig(level=logging.INFO)
     init('localhost', 'appcensus', 'appcensus', 'placeholder')
 
-    print(get_apps_to_update(limit=150))
-    print(get_apps_to_update(limit=-1))
+    print(get_apps_to_update(limit=50))
+    update_app_in_store('com.sinyee.babybus.shoes', in_store=False)
