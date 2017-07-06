@@ -66,21 +66,50 @@ def insert_company(name, google_dev_id=None, company_type=None):
 
     return pkey 
 
+####################
+# Privacy policies #
+####################
+def insert_policy(policy_url, is_url_active=False):
+    pkey = None
+
+    # Only touch the database if the URL is neither None nor empty
+    if(policy_url is not None and len(policy_url) > 0):
+        query = """INSERT INTO privacyPolicies(url, isUrlActive)
+                   VALUES (%s, %s)
+                   ON DUPLICATE KEY UPDATE
+                   url=%s, isUrlActive=%s"""
+        url_active = 1 if is_url_active else 0
+        cursor = _query_commit(query, policy_url, url_active, \
+                                      policy_url, url_active)
+
+        # Get the primary key of the new row
+        query = """SELECT id FROM privacyPolicies
+                   WHERE url=%s"""
+        cursor = _query(query, policy_url)
+        (pkey,) = cursor.fetchone()
+
+        logging.info('Added %d (%s) to privacy policies table' % (pkey, policy_url))
+
+    else:
+        logging.warn('Null or empty policy URL supplied')
+
+    return pkey
+
 #####################
 # Apps and releases #
 #####################
 
-def insert_app(dev_key, package_name, common_name, product_url=None, last_checked=None, icon_url=None, install_count=0, run_status=0, is_family=0):
+def insert_app(dev_key, package_name, common_name, product_url=None, last_checked=None, icon_url=None, install_count=0, run_status=0, is_family=0, policy_key=None):
     # Set the timestamp to the current UTC time if not provided
     if(last_checked is None):
         last_checked = get_current_timestamp()
 
-    query = """INSERT INTO apps(packageName, commonName, devCompanyId, productUrl, timestampLastChecked, iconUrl, installCount, runStatus, isFamily)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    query = """INSERT INTO apps(packageName, commonName, devCompanyId, productUrl, timestampLastChecked, iconUrl, installCount, runStatus, isFamily, policyId)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                ON DUPLICATE KEY UPDATE
-               packageName=%s, commonName=%s, devCompanyId=%s, productUrl=%s, timestampLastChecked=%s, iconUrl=%s, installCount=%s, runStatus=%s, isFamily=%s"""
-    cursor = _query_commit(query, package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status, is_family, \
-                                  package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status, is_family)
+               packageName=%s, commonName=%s, devCompanyId=%s, productUrl=%s, timestampLastChecked=%s, iconUrl=%s, installCount=%s, runStatus=%s, isFamily=%s, policyId=%s"""
+    cursor = _query_commit(query, package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status, is_family, policy_key, \
+                                  package_name, common_name, dev_key, product_url, last_checked, icon_url, install_count, run_status, is_family, policy_key)
 
     # Get the primary key of the new row
     query = """SELECT id FROM apps
@@ -372,5 +401,4 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     init('localhost', 'appcensus', 'appcensus', 'placeholder')
 
-    print(get_apps_to_update(limit=50))
-    update_app_in_store('com.sinyee.babybus.shoes', in_store=False)
+    insert_policy('http://foo.bar', is_url_active=False)
