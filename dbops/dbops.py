@@ -193,6 +193,15 @@ def update_app_install_count(package_name, install_count):
 
     logging.info('Updated installCount for %s to %d' % (package_name, install_count))
 
+def update_app_policy_id(package_name, policy_id):
+    logging.warn('update_app_policy_id() is meant for testing purposes only')
+    query = """UPDATE apps
+               SET policyId=%s
+               WHERE packageName=%s"""
+    cursor = _query_commit(query, policy_id, package_name)
+
+    logging.info('Updated policyId for %s to %d' % (package_name, policy_id))
+
 def insert_app_release(app_key, version_code, version_string, timestamp_publish, \
                        timestamp_download=None, has_iap=None, has_ads=None, social_nets=None, tested=0):
     query = """INSERT INTO appReleases(appId, versionCode, versionString, timestampPublish, timestampDownload, hasInAppPurchases, hasAds, socialNetworks, tested)
