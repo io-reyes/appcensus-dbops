@@ -230,13 +230,14 @@ def update_release_tested(release_key, tested=True):
     logging.info('Marked release id %d as tested=%s' % (release_key, tested))
 
     if(tested):
+        tested_time = get_current_timestamp()
         query = """UPDATE apps
-                   SET runStatus=0
+                   SET runStatus=0,timestampTested=%s
                    WHERE id IN
                         (SELECT appId FROM appReleases
                          WHERE id=%s)"""
-        cursor = _query_commit(query, release_key)
-        logging.info('Marked app for release id %d as runStatus=0' % release_key)
+        cursor = _query_commit(query, tested_time, release_key)
+        logging.info('Marked app for release id %d as runStatus=0 on time %d' % (release_key, tested_time))
 
 ##############
 # Categories #
@@ -410,4 +411,4 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     init('localhost', 'appcensus', 'appcensus', 'placeholder')
 
-    insert_policy('http://foo.bar', is_url_active=False)
+    update_release_tested(19)
