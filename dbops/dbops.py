@@ -403,12 +403,12 @@ def get_apps_to_update(limit=100):
 def is_app_in_db(package_name, version_code):
     return get_release_id(package_name, version_code) is not None
 
-def get_policy_urls():
-    query = """SELECT url FROM privacyPolicies"""
+def get_policy_urls_and_active():
+    query = """SELECT url,isUrlActive FROM privacyPolicies"""
     cursor = _query(query)
 
     try:
-        urls = [x[0] for x in list(cursor.fetchall())]
+        urls = list(cursor.fetchall())
         logging.info('Found %d privacy policy URLs' % len(urls))
 
         return urls
