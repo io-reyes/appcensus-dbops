@@ -403,6 +403,19 @@ def get_apps_to_update(limit=100):
 def is_app_in_db(package_name, version_code):
     return get_release_id(package_name, version_code) is not None
 
+def get_policy_urls():
+    query = """SELECT url FROM privacyPolicies"""
+    cursor = _query(query)
+
+    try:
+        urls = [x[0] for x in list(cursor.fetchall())]
+        logging.info('Found %d privacy policy URLs' % len(urls))
+
+        return urls
+    except TypeError:
+        logging.warning('Found no privacy policy URLs')
+        return list()
+
 ###################
 # Standalone test #
 ###################
@@ -411,4 +424,4 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     init('localhost', 'appcensus', 'appcensus', 'placeholder')
 
-    update_release_tested(19)
+    print(get_policy_urls())
