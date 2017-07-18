@@ -416,12 +416,29 @@ def get_policy_urls_and_active():
         logging.warning('Found no privacy policy URLs')
         return list()
 
+def get_tested_app_releases():
+    query = """SELECT apps.packageName,appReleases.versionCode
+               FROM appReleases
+               INNER JOIN apps ON apps.id=appReleases.appId
+               WHERE appReleases.tested=1
+               LIMIT 500"""
+    cursor = _query(query)
+
+    try:
+        tested = list(cursor.fetchall())
+        logging.info('Found %d tested app releases' % len(tested))
+
+        return tested
+    except TypeError:
+        logging.warning('Found no tested apps')
+        return list()
+
 ###################
 # Standalone test #
 ###################
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    init('localhost', 'appcensus', 'appcensus', 'placeholder')
+    init('placeholder', 'appcensus', 'appcensus', 'placeholder')
 
-    print(get_policy_urls())
+    print(get_tested_app_releases())
