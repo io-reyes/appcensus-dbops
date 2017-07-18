@@ -420,8 +420,7 @@ def get_tested_app_releases():
     query = """SELECT apps.packageName,appReleases.versionCode
                FROM appReleases
                INNER JOIN apps ON apps.id=appReleases.appId
-               WHERE appReleases.tested=1
-               LIMIT 500"""
+               WHERE appReleases.tested=1"""
     cursor = _query(query)
 
     try:
